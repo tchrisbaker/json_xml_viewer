@@ -115,6 +115,7 @@ def render_json_tree():
 
     search_entry = tk.Entry(search_frame)
     search_entry.pack(side='left', fill='x', expand=True)
+    
     search_after_id = None  # Global or closure variable to track scheduled search
     search_entry.bind("<KeyRelease>")
 
@@ -142,7 +143,7 @@ def render_json_tree():
         nonlocal search_after_id
         if search_after_id:
             global_vars.root.after_cancel(search_after_id)
-        search_after_id = global_vars.root.after(300, doSearch)
+        search_after_id = global_vars.root.after(2000, doSearch)
 
     search_entry.bind("<KeyRelease>", on_search_key)
 
