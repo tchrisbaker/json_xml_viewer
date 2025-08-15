@@ -9,17 +9,11 @@ from tree_utils import collapse_all
 import global_vars
 
 def render_json_tree():
+
     global_vars.root = TkinterDnD.Tk()
     global_vars.root.title("Tree Viewer")
     global_vars.root.geometry("800x600")
 
-
-    # Placeholder for setting up other components
-    # setup_search_bar(root, tree)
-    # setup_context_menu(root, tree)
-    # setup_drag_and_drop(tree, root)
-    # tooltip = ToolTip(tree)
-    # setup_tooltip(tree, tooltip)
 
     # Tree widget with scrollbar
     tree_frame = tk.Frame(global_vars.root)
@@ -74,6 +68,8 @@ def render_json_tree():
 
     case_check = tk.Checkbutton(search_frame, text="Case Sensitive", variable=global_vars.case_var)
     case_check.pack(side='left', padx=5)
+    
+    global_vars.case_var.trace_add("write", lambda *args: doSearch())
 
     #whole_word_check = tk.Checkbutton(search_frame, text="Whole Word", variable=whole_word_var)
     #whole_word_check.pack(side='left', padx=5)
@@ -90,21 +86,43 @@ def render_json_tree():
 
     search_entry = tk.Entry(search_frame)
     search_entry.pack(side='left', fill='x', expand=True)
-    #search_after_id = None  # Global or closure variable to track scheduled search
+    search_after_id = None  # Global or closure variable to track scheduled search
     search_entry.bind("<KeyRelease>")
 
-    search_button = tk.Button(search_frame, text="Search", command=lambda: search_tree(tree, search_entry.get()))
+    def doSearch(event=None):
+        print("search")
+        search_tree(tree, search_entry.get())
+
+    def doClearSearch(event=None):
+        #print("clear search")
+        clear_search(tree, search_entry)
+
+    search_button = tk.Button(search_frame, text="Search", command=doSearch)
     search_button.pack(side='left', padx=5)
 
-    clear_button = tk.Button(search_frame, text="Clear", command=lambda: clear_search(tree, search_entry))
+    clear_button = tk.Button(search_frame, text="Clear", command=doClearSearch)
     clear_button.pack(side='left', padx=5) 
+
+    #bind ui elements
+     # Bind the event
+    search_mode_menu.bind("<<ComboboxSelected>>", doSearch)
+    case_check.bind("<<CheckBoxSelected>>", doSearch)
+
+    #search each time the user presses a key in the search bar
+    def on_search_key(event):
+        nonlocal search_after_id
+        if search_after_id:
+            global_vars.root.after_cancel(search_after_id)
+        search_after_id = global_vars.root.after(300, doSearch)
+
+    search_entry.bind("<KeyRelease>", on_search_key)
 
     #shortcuts
     # Keyboard shortcuts
     global_vars.root.bind('<Control-o>', lambda e: open_file_dialog(tree, global_vars.root))
     global_vars.root.bind('<Control-q>', lambda e: global_vars.root.quit())
-    global_vars.root.bind('<Return>', lambda e: search_tree(tree, search_entry.get()))
-    global_vars.root.bind('<Escape>', lambda e: clear_search(tree, search_entry))
+    global_vars.root.bind('<Return>', doSearch)
+    global_vars.root.bind('<Escape>', doClearSearch)
     global_vars.root.bind('<Control-e>', lambda e: expand_all(tree))
     global_vars.root.bind('<Control-E>', lambda e: collapse_all(tree))  # Shift+Ctrl+E 
 
