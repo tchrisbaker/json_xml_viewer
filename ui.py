@@ -4,6 +4,8 @@ from tkinter import ttk
 from open_file import open_file_dialog
 from search import search_tree 
 from search import clear_search
+from tree_utils import expand_all
+from tree_utils import collapse_all
 import global_vars
 
 def render_json_tree():
@@ -52,10 +54,10 @@ def render_json_tree():
     file_menu.add_command(label="Exit", command=global_vars.root.quit, accelerator="Ctrl+Q")
     menu_bar.add_cascade(label="File", menu=file_menu)
 
-    """ tree_menu = tk.Menu(menu_bar, tearoff=0)
+    tree_menu = tk.Menu(menu_bar, tearoff=0)
     tree_menu.add_command(label="Expand All", command=lambda: expand_all(tree), accelerator="Ctrl+E")
     tree_menu.add_command(label="Collapse All", command=lambda: collapse_all(tree), accelerator="Ctrl+Shift+E")
-    menu_bar.add_cascade(label="Tree", menu=tree_menu) """
+    menu_bar.add_cascade(label="Tree", menu=tree_menu)
 
     # ==== Search bar ==========================================================
     #search results next and previous
@@ -103,8 +105,8 @@ def render_json_tree():
     global_vars.root.bind('<Control-q>', lambda e: global_vars.root.quit())
     global_vars.root.bind('<Return>', lambda e: search_tree(tree, search_entry.get()))
     global_vars.root.bind('<Escape>', lambda e: clear_search(tree, search_entry))
-    #global_vars.root.bind('<Control-e>', lambda e: expand_all(tree))
-    #global_vars.root.bind('<Control-E>', lambda e: collapse_all(tree))  # Shift+Ctrl+E 
+    global_vars.root.bind('<Control-e>', lambda e: expand_all(tree))
+    global_vars.root.bind('<Control-E>', lambda e: collapse_all(tree))  # Shift+Ctrl+E 
 
     # add menu bar to the window
     global_vars.root.config(menu=menu_bar)
