@@ -4,12 +4,33 @@ from tkinter import ttk
 from open_file import open_file_dialog
 from search import search_tree 
 from search import clear_search
+from search import get_full_path
+from search import cycle_match
+from utils import set_status
 from tree_utils import expand_all
 from tree_utils import collapse_all
+
 import global_vars
 
-def render_json_tree():
+class ToolTip:
+    def __init__(self, widget):
+        self.widget = widget
+        self.tip_window = None
 
+    def show_tip(self, text, x, y):
+        self.hide_tip()
+        self.tip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=text, background="#ffffe0", relief="solid", borderwidth=1, font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
+
+    def hide_tip(self):
+        if self.tip_window:
+            self.tip_window.destroy()
+            self.tip_window = None
+            
+def render_json_tree():
     global_vars.root = TkinterDnD.Tk()
     global_vars.root.title("Tree Viewer")
     global_vars.root.geometry("800x600")
@@ -23,6 +44,7 @@ def render_json_tree():
     tree_scrollbar.pack(side='right', fill='y')
 
     tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scrollbar.set)
+    tooltip = ToolTip(tree)
     tree.pack(side='left', fill='both', expand=True)
 
     tree_scrollbar.config(command=tree.yview)
@@ -40,17 +62,26 @@ def render_json_tree():
 
     # === Menu bar ================================================================
     menu_bar = tk.Menu(global_vars.root)
+    
+    def openFileDialog(): 
+        open_file_dialog(tree, global_vars.root)
+
+    def expandAll():
+        expand_all(tree)
+    
+    def collapseAll():
+        collapse_all(tree)
 
     # File menu
     file_menu = tk.Menu(menu_bar, tearoff=0)
-    file_menu.add_command(label="Open", command=lambda: open_file_dialog(tree, global_vars.root), accelerator="Ctrl+O")
+    file_menu.add_command(label="Open", command=lambda: openFileDialog(), accelerator="Ctrl+O")
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=global_vars.root.quit, accelerator="Ctrl+Q")
     menu_bar.add_cascade(label="File", menu=file_menu)
 
     tree_menu = tk.Menu(menu_bar, tearoff=0)
-    tree_menu.add_command(label="Expand All", command=lambda: expand_all(tree), accelerator="Ctrl+E")
-    tree_menu.add_command(label="Collapse All", command=lambda: collapse_all(tree), accelerator="Ctrl+Shift+E")
+    tree_menu.add_command(label="Expand All", command=lambda: expandAll(), accelerator="Ctrl+E")
+    tree_menu.add_command(label="Collapse All", command=lambda: collapseAll(), accelerator="Ctrl+Shift+E")
     menu_bar.add_cascade(label="Tree", menu=tree_menu)
 
     # ==== Search bar ==========================================================
@@ -58,11 +89,11 @@ def render_json_tree():
     search_frame = tk.Frame(global_vars.root)
     search_frame.pack(fill='x', padx=5, pady=5)
 
-    """ next_button = tk.Button(search_frame, text="Next", command=lambda: cycle_match(tree, 1))
+    next_button = tk.Button(search_frame, text="Next", command=lambda: cycle_match(tree, 1))
     next_button.pack(side='left', padx=5)
 
     prev_button = tk.Button(search_frame, text="Previous", command=lambda: cycle_match(tree, -1))
-    prev_button.pack(side='left', padx=5)  """
+    prev_button.pack(side='left', padx=5) 
     
     global_vars.case_var = tk.BooleanVar()
 
@@ -71,15 +102,11 @@ def render_json_tree():
     
     global_vars.case_var.trace_add("write", lambda *args: doSearch())
 
-    #whole_word_check = tk.Checkbutton(search_frame, text="Whole Word", variable=whole_word_var)
-    #whole_word_check.pack(side='left', padx=5)
-
     search_modes = ["Contains", "Starts With", "Ends With", "Exact Match"]
     global_vars.search_mode_var = tk.StringVar(value=search_modes[0])
 
     search_mode_menu = ttk.Combobox(search_frame, textvariable=global_vars.search_mode_var, values=search_modes, state="readonly", width=12)
     search_mode_menu.pack(side='left', padx=5)
-
 
     search_label = tk.Label(search_frame, text="Search:")
     search_label.pack(side='left')
@@ -117,14 +144,89 @@ def render_json_tree():
 
     search_entry.bind("<KeyRelease>", on_search_key)
 
-    #shortcuts
+    #tooltip 
+    def on_motion(event):
+        node = tree.identify_row(event.y)
+        if node:
+            full_path = get_full_path(node, tree)
+            tooltip.show_tip(full_path, event.x_root + 10, event.y_root + 10)
+        else:
+            tooltip.hide_tip()
+
+    def on_leave(event):
+        tooltip.hide_tip()
+
+    tree.bind("<Motion>", on_motion)
+    tree.bind("<Leave>", on_leave)
+    
+    # Bind right-click to tree
+    # Context menu for tree items
+    context_menu = tk.Menu(global_vars.root, tearoff=0)
+    context_menu.add_command(label="Copy", command=lambda: copy_selected(tree))
+    context_menu.add_command(label="Copy Full Path", command=lambda: copy_full_path(tree))
+    context_menu.add_command(label="Expand", command=lambda: expand_selected(tree))
+    context_menu.add_command(label="Search", command=lambda: search_selected(tree))
+
+    def copy_full_path(tree):
+        selected = tree.selection()
+        if selected:
+            node = selected[0]
+            path_parts = []
+            while node:
+                text = tree.item(node, 'text')
+                path_parts.insert(0, text)
+                node = tree.parent(node)
+            full_path = ".".join(path_parts)
+            global_vars.root.clipboard_clear()
+            global_vars.root.clipboard_append(full_path)
+            global_vars.root.update()
+            # Update status bar
+            current_status = global_vars.status_var.get()
+            set_status(f"Copied full path '{full_path}'. {current_status}")
+
+    def copy_selected(tree):
+        selected = tree.selection()
+        if selected:
+            value = tree.item(selected[0], 'text')
+            global_vars.root.clipboard_clear()
+            global_vars.root.clipboard_append(value)
+            global_vars.root.update()  # Keeps clipboard content after app closes
+            # Update status bar with copy confirmation
+            current_status = global_vars.status_var.get()
+            set_status(f"Copied '{value}'. {current_status}")
+
+    
+    def search_selected(tree):
+        selected = tree.selection()
+        if selected:
+            value = tree.item(selected[0], 'text')
+            search_entry.delete(0, tk.END)
+            search_entry.insert(0, value)
+            search_tree(tree, value)
+
+    def expand_selected(tree):
+        selected = tree.selection()
+        if selected:
+            def expand_node(node):
+                tree.item(node, open=True)
+                for child in tree.get_children(node):
+                    expand_node(child)
+            expand_node(selected[0])
+
+    def show_context_menu(event):
+        item_id = tree.identify_row(event.y)
+        if item_id:
+            tree.selection_set(item_id)
+            context_menu.post(event.x_root, event.y_root)
+    tree.bind("<Button-3>", show_context_menu)
+
     # Keyboard shortcuts
-    global_vars.root.bind('<Control-o>', lambda e: open_file_dialog(tree, global_vars.root))
+    global_vars.root.bind('<Control-o>', lambda e: openFileDialog())
     global_vars.root.bind('<Control-q>', lambda e: global_vars.root.quit())
     global_vars.root.bind('<Return>', doSearch)
     global_vars.root.bind('<Escape>', doClearSearch)
-    global_vars.root.bind('<Control-e>', lambda e: expand_all(tree))
-    global_vars.root.bind('<Control-E>', lambda e: collapse_all(tree))  # Shift+Ctrl+E 
+    global_vars.root.bind('<Control-e>', lambda e: expandAll())
+    global_vars.root.bind('<Control-E>', lambda e: collapseAll())  # Shift+Ctrl+E 
 
     # add menu bar to the window
     global_vars.root.config(menu=menu_bar)

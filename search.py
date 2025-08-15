@@ -6,6 +6,9 @@ from utils import set_status
 search_matches = []
 current_match_index = -1
 search_after_id = None  # Global or closure variable to track scheduled search
+
+
+
 def clear_highlights(tree):
     for item in tree.get_children():
         clear_node_highlight(tree, item)
@@ -71,67 +74,28 @@ def clear_search(tree, search_entry):
     search_entry.delete(0, tk.END)
     set_status("Search cleared.")
 
+#tooltip will show the full path
+def get_full_path(node, tree):
+    path_parts = []
+    while node:
+        text = tree.item(node, 'text')
+        path_parts.insert(0, text)
+        node = tree.parent(node)
+    return " -> ".join(path_parts)
 
-""" def highlight_matches(tree):
-    #Highlight all matched nodes.
-    for node in tree.get_children():
-        clear_highlight(tree, node)
-
-    for node in search_matches:
-        tree.item(node, tags=('match',))
-    tree.tag_configure('match', background='yellow')
-
-def clear_highlight(tree, node=''):
-    #Clear all highlights recursively.
-    tree.item(node, tags=())
-    for child in tree.get_children(node):
-        clear_highlight(tree, child) """
-
-""" def clear_search(tree):
-    #Clear search highlights and reset match index.
-    global search_matches, current_match_index
-    for node in tree.get_children():
-        clear_highlight(tree, node)
-    search_matches = []
-    current_match_index = -1 """
-
-def cycle_match(tree):
-    """Cycle through matched nodes and focus on the current one."""
+def cycle_match(tree, direction):
     global current_match_index
     if not search_matches:
+        set_status("No matches to cycle through.")
         return
-    current_match_index = (current_match_index + 1) % len(search_matches)
+
+    current_match_index = (current_match_index + direction) % len(search_matches)
     node = search_matches[current_match_index]
-    tree.see(node)
+
     tree.selection_set(node)
     tree.focus(node)
+    tree.see(node)
 
-""" def setup_search_bar(root, tree):
-    #Create a search bar UI and bind search functions
-    frame = tk.Frame(root)
-    frame.pack(fill=tk.X, padx=5, pady=5)
+    path = get_full_path(node, tree)
+    set_status(f"Focused match {current_match_index + 1} of {len(search_matches)}: {path}", clear_after=False)
 
-    entry = tk.Entry(frame)
-    entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-
-    def on_search():
-        query = entry.get()
-        search_tree(tree, query)
-
-    def on_clear():
-        entry.delete(0, tk.END)
-        clear_search(tree)
-
-    def on_next():
-        cycle_match(tree)
-
-    tk.Button(frame, text="Search", command=on_search).pack(side=tk.LEFT, padx=2)
-    tk.Button(frame, text="Clear", command=on_clear).pack(side=tk.LEFT, padx=2)
-    tk.Button(frame, text="Next", command=on_next).pack(side=tk.LEFT, padx=2) """
-
-""" 
-def on_search_key(event, root, tree, search_entry):
-    global search_after_id
-    if search_after_id:
-        root.after_cancel(search_after_id)
-    search_after_id = root.after(300, lambda: search_tree(tree, search_entry.get())) """
