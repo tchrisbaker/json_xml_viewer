@@ -17,6 +17,7 @@ from drag_drop import setupDnD
 from recent_files import load_recent_files
 from drag_drop import open_dropped_file
 from context_menu import setup_context_menu
+from shortcuts import setup_shortcuts
 class ToolTip:
     def __init__(self, widget):
         self.widget = widget
@@ -186,12 +187,7 @@ def render_json_tree():
     setup_context_menu(tree, global_vars.root, search_selected)
 
     # Keyboard shortcuts
-    global_vars.root.bind('<Control-o>', lambda e: openFileDialog())
-    global_vars.root.bind('<Control-q>', lambda e: global_vars.root.quit())
-    global_vars.root.bind('<Return>', doSearch)
-    global_vars.root.bind('<Escape>', doClearSearch)
-    global_vars.root.bind('<Control-e>', lambda e: expandAll())
-    global_vars.root.bind('<Control-E>', lambda e: collapseAll())  # Shift+Ctrl+E 
+    setup_shortcuts(openFileDialog, doSearch, doClearSearch, expandAll, collapseAll)
 
     # add menu bar to the window
     global_vars.root.config(menu=menu_bar)
