@@ -1,40 +1,25 @@
 from tkinterdnd2 import TkinterDnD,DND_FILES
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 
 from open_file import open_file_dialog
 from search import search_tree 
 from search import clear_search
-from search import get_full_path
+
 from search import cycle_match
-from utils import set_status
+
 from tree_utils import expand_all
 from tree_utils import collapse_all
 import xml.etree.ElementTree as ET
-import json
+
 import global_vars
 from drag_drop import setupDnD
 from recent_files import load_recent_files
 from drag_drop import open_dropped_file
 from context_menu import setup_context_menu
 from shortcuts import setup_shortcuts
-class ToolTip:
-    def __init__(self, widget):
-        self.widget = widget
-        self.tip_window = None
-
-    def show_tip(self, text, x, y):
-        self.hide_tip()
-        self.tip_window = tw = tk.Toplevel(self.widget)
-        tw.wm_overrideredirect(True)
-        tw.wm_geometry(f"+{x}+{y}")
-        label = tk.Label(tw, text=text, background="#ffffe0", relief="solid", borderwidth=1, font=("tahoma", "8", "normal"))
-        label.pack(ipadx=1)
-
-    def hide_tip(self):
-        if self.tip_window:
-            self.tip_window.destroy()
-            self.tip_window = None
+from tooltip import ToolTip
+from tooltip import setup_tooltip
             
 def render_json_tree():
 
@@ -161,19 +146,7 @@ def render_json_tree():
     search_entry.bind("<KeyRelease>", on_search_key)
 
     #tooltip 
-    def on_motion(event):
-        node = tree.identify_row(event.y)
-        if node:
-            full_path = get_full_path(node, tree)
-            tooltip.show_tip(full_path, event.x_root + 10, event.y_root + 10)
-        else:
-            tooltip.hide_tip()
-
-    def on_leave(event):
-        tooltip.hide_tip()
-
-    tree.bind("<Motion>", on_motion)
-    tree.bind("<Leave>", on_leave)
+    setup_tooltip(tree, tooltip)
     
     #Set up Drag and Drop
     setupDnD(tree, update_recent_files_menu )
