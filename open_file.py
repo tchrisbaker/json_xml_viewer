@@ -52,8 +52,6 @@ def open_file_dialog(tree, root, callback=None):
                 return
             add_to_recent_files(file_path, callback)
             root.title(f"JSON/XML Tree Viewer - {file_name}")  # Update title bar
-            #if callback:
-                #callback(file_path)
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load file:\n{e}")
