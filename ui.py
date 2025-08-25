@@ -16,6 +16,7 @@ import global_vars
 from drag_drop import setupDnD
 from recent_files import load_recent_files
 from drag_drop import open_dropped_file
+from context_menu import setup_context_menu
 class ToolTip:
     def __init__(self, widget):
         self.widget = widget
@@ -178,64 +179,11 @@ def render_json_tree():
     
     # Bind right-click to tree
     # Context menu for tree items
-    context_menu = tk.Menu(global_vars.root, tearoff=0)
-    context_menu.add_command(label="Copy", command=lambda: copy_selected(tree))
-    context_menu.add_command(label="Copy Full Path", command=lambda: copy_full_path(tree))
-    context_menu.add_command(label="Expand", command=lambda: expand_selected(tree))
-    context_menu.add_command(label="Search", command=lambda: search_selected(tree))
-
-    def copy_full_path(tree):
-        selected = tree.selection()
-        if selected:
-            node = selected[0]
-            path_parts = []
-            while node:
-                text = tree.item(node, 'text')
-                path_parts.insert(0, text)
-                node = tree.parent(node)
-            full_path = ".".join(path_parts)
-            global_vars.root.clipboard_clear()
-            global_vars.root.clipboard_append(full_path)
-            global_vars.root.update()
-            # Update status bar
-            current_status = global_vars.status_var.get()
-            set_status(f"Copied full path '{full_path}'. {current_status}")
-
-    def copy_selected(tree):
-        selected = tree.selection()
-        if selected:
-            value = tree.item(selected[0], 'text')
-            global_vars.root.clipboard_clear()
-            global_vars.root.clipboard_append(value)
-            global_vars.root.update()  # Keeps clipboard content after app closes
-            # Update status bar with copy confirmation
-            current_status = global_vars.status_var.get()
-            set_status(f"Copied '{value}'. {current_status}")
-
-    
-    def search_selected(tree):
-        selected = tree.selection()
-        if selected:
-            value = tree.item(selected[0], 'text')
-            search_entry.delete(0, tk.END)
-            search_entry.insert(0, value)
-            search_tree(tree, value)
-
-    def expand_selected(tree):
-        selected = tree.selection()
-        if selected:
-            def expand_node(node):
-                tree.item(node, open=True)
-                for child in tree.get_children(node):
-                    expand_node(child)
-            expand_node(selected[0])
-
-    def show_context_menu(event):
-        item_id = tree.identify_row(event.y)
-        if item_id:
-            tree.selection_set(item_id)
-            context_menu.post(event.x_root, event.y_root)
-    tree.bind("<Button-3>", show_context_menu)
+    def search_selected(query):
+        search_entry.delete(0, tk.END)
+        search_entry.insert(0, query)
+        search_tree(tree, query)
+    setup_context_menu(tree, global_vars.root, search_selected)
 
     # Keyboard shortcuts
     global_vars.root.bind('<Control-o>', lambda e: openFileDialog())
