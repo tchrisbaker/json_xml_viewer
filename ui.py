@@ -13,9 +13,9 @@ from tree_utils import collapse_all
 import xml.etree.ElementTree as ET
 import json
 import global_vars
-
+from drag_drop import setupDnD
 from recent_files import load_recent_files
-
+from drag_drop import open_dropped_file
 class ToolTip:
     def __init__(self, widget):
         self.widget = widget
@@ -128,7 +128,7 @@ def render_json_tree():
     def update_recent_files_menu():
         recent_menu.delete(0, 'end')
         for path in global_vars.recent_files:
-            recent_menu.add_command(label=path, command=lambda p=path: open_dropped_file(tree, global_vars.root, p))
+            recent_menu.add_command(label=path, command=lambda p=path: open_dropped_file(tree, p, update_recent_files_menu))
     
     def doSearch(event=None):
         print("search")
@@ -173,59 +173,9 @@ def render_json_tree():
     tree.bind("<Motion>", on_motion)
     tree.bind("<Leave>", on_leave)
     
-    #handle drag & drop
-    def handle_drop(event):
-        file_path = event.data.strip('{}')  # Remove curly braces if present
-        if file_path.endswith('.json') or file_path.endswith('.xml'):
-            open_dropped_file(tree, global_vars.root, file_path)
-        else:
-            messagebox.showerror("Unsupported Format", "Only .json and .xml files are supported.")
-
-    tree.drop_target_register(DND_FILES)
-    tree.dnd_bind('<<Drop>>', handle_drop)
-
-    def open_dropped_file(tree, root, file_path):
-        try:
-            tree.delete(*tree.get_children())
-            file_name = file_path.split("/")[-1]
-            if file_path.endswith('.json'):
-                with open(file_path, 'r') as f:
-                    json_data = json.load(f)
-                insert_json(tree, '', json_data)
-            elif file_path.endswith('.xml'):
-                import xml.etree.ElementTree as ET
-                tree_data = ET.parse(file_path)
-                root_element = tree_data.getroot()
-                insert_xml(tree, '', root_element)
-            global_vars.root.title(f"JSON/XML Tree Viewer - {file_name}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load file:\n{e}")
-
-    def insert_json(tree, parent, json_data):
-        if isinstance(json_data, dict):
-            for key, value in json_data.items():
-                node = tree.insert(parent, 'end', text=key)
-                insert_json(tree, node, value)
-        elif isinstance(json_data, list):
-            for index, item in enumerate(json_data):
-                node = tree.insert(parent, 'end', text=f"[{index}]")
-                insert_json(tree, node, item)
-        else:
-            tree.insert(parent, 'end', text=str(json_data))
-
-    def insert_xml(tree, parent, element):
-        tag = element.tag
-        node_text = f"{tag}"
-        if element.attrib:
-            node_text += f" {element.attrib}"
-        node = tree.insert(parent, 'end', text=node_text)
-
-        if element.text and element.text.strip():
-            tree.insert(node, 'end', text=f"Text: {element.text.strip()}")
-
-        for child in element:
-            insert_xml(tree, node, child)
-
+    #Set up Drag and Drop
+    setupDnD(tree, update_recent_files_menu )
+    
     # Bind right-click to tree
     # Context menu for tree items
     context_menu = tk.Menu(global_vars.root, tearoff=0)
