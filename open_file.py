@@ -2,7 +2,7 @@ import json
 import tkinter as tk 
 from tkinter import ttk, filedialog, messagebox
 import xml.etree.ElementTree as ET
-
+from recent_files import add_to_recent_files
 def insert_xml(tree, parent, element):
     tag = element.tag
     node_text = f"{tag}"
@@ -28,7 +28,7 @@ def insert_json(tree, parent, json_data):
     else:
         tree.insert(parent, 'end', text=str(json_data))
 
-def open_file_dialog(tree, root):
+def open_file_dialog(tree, root, callback=None):
     file_path = filedialog.askopenfilename(
         title="Open JSON or XML File",
         filetypes=[("JSON and XML Files", "*.json *.xml"), ("All Files", "*.*")]
@@ -50,8 +50,10 @@ def open_file_dialog(tree, root):
             else:
                 messagebox.showerror("Unsupported Format", "Only .json and .xml files are supported.")
                 return
-
+            add_to_recent_files(file_path, callback)
             root.title(f"JSON/XML Tree Viewer - {file_name}")  # Update title bar
+            #if callback:
+                #callback(file_path)
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load file:\n{e}")

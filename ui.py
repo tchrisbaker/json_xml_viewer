@@ -14,6 +14,8 @@ import xml.etree.ElementTree as ET
 import json
 import global_vars
 
+from recent_files import load_recent_files
+
 class ToolTip:
     def __init__(self, widget):
         self.widget = widget
@@ -33,6 +35,7 @@ class ToolTip:
             self.tip_window = None
             
 def render_json_tree():
+
     global_vars.root = TkinterDnD.Tk()
     global_vars.root.title("Tree Viewer")
     global_vars.root.geometry("800x600")
@@ -64,10 +67,10 @@ def render_json_tree():
 
     # === Menu bar ================================================================
     menu_bar = tk.Menu(global_vars.root)
-    
-    def openFileDialog(): 
-        open_file_dialog(tree, global_vars.root)
 
+    def openFileDialog():
+        #open_file_dialog(tree, global_vars.root, lambda path: add_to_recent_files(path, update_recent_files_menu))
+        open_file_dialog(tree, global_vars.root, update_recent_files_menu)
     def expandAll():
         expand_all(tree)
     
@@ -80,6 +83,10 @@ def render_json_tree():
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=global_vars.root.quit, accelerator="Ctrl+Q")
     menu_bar.add_cascade(label="File", menu=file_menu)
+    
+    #recent files
+    recent_menu = tk.Menu(file_menu, tearoff=0)
+    file_menu.add_cascade(label="Recent Files", menu=recent_menu)
 
     tree_menu = tk.Menu(menu_bar, tearoff=0)
     tree_menu.add_command(label="Expand All", command=lambda: expandAll(), accelerator="Ctrl+E")
@@ -118,7 +125,11 @@ def render_json_tree():
     
     search_after_id = None  # Global or closure variable to track scheduled search
     search_entry.bind("<KeyRelease>")
-
+    def update_recent_files_menu():
+        recent_menu.delete(0, 'end')
+        for path in global_vars.recent_files:
+            recent_menu.add_command(label=path, command=lambda p=path: open_dropped_file(tree, global_vars.root, p))
+    
     def doSearch(event=None):
         print("search")
         search_tree(tree, search_entry.get())
@@ -126,7 +137,7 @@ def render_json_tree():
     def doClearSearch(event=None):
         #print("clear search")
         clear_search(tree, search_entry)
-
+    load_recent_files(update_recent_files_menu)
     search_button = tk.Button(search_frame, text="Search", command=doSearch)
     search_button.pack(side='left', padx=5)
 
