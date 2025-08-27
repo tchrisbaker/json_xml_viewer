@@ -4,3 +4,5 @@ status_var = None # The status text at the bottom of the screen
 case_var = None # case sensitivity value (true/false)
 root = None # root window
 recent_files = []  # Stores up to 5 recent file paths
+search_entry = None # The search entry widget
+tree = None # The treeview widget
