@@ -6,3 +6,5 @@ root = None # root window
 recent_files = []  # Stores up to 5 recent file paths
 search_entry = None # The search entry widget
 tree = None # The treeview widget
+recent_menu = None # The recent files menu object
+menu_bar = None # The main menu bar

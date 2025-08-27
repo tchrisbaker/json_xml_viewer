@@ -20,6 +20,7 @@ from tooltip import setup_tooltip
 from searchbar import setup_search_bar
 from searchbar import doSearch
 from searchbar import doClearSearch
+from menu import setup_menu
 def render_json_tree():
     # Initialize main application window
     global_vars.root = TkinterDnD.Tk()
@@ -53,10 +54,9 @@ def render_json_tree():
     status_bar.pack(fill='x', side='bottom')
 
     # === Menu bar ================================================================
-    menu_bar = tk.Menu(global_vars.root)
+    # menu_bar = tk.Menu(global_vars.root)
 
     def openFileDialog():
-        #open_file_dialog(tree, global_vars.root, lambda path: add_to_recent_files(path, update_recent_files_menu))
         open_file_dialog(global_vars.tree, global_vars.root, update_recent_files_menu)
     def expandAll():
         expand_all(global_vars.tree)
@@ -64,30 +64,19 @@ def render_json_tree():
     def collapseAll():
         collapse_all(global_vars.tree)
 
-    # File menu
-    file_menu = tk.Menu(menu_bar, tearoff=0)
-    file_menu.add_command(label="Open", command=lambda: openFileDialog(), accelerator="Ctrl+O")
-    file_menu.add_separator()
-    file_menu.add_command(label="Exit", command=global_vars.root.quit, accelerator="Ctrl+Q")
-    menu_bar.add_cascade(label="File", menu=file_menu)
-    
-    #recent files
-    recent_menu = tk.Menu(file_menu, tearoff=0)
-    file_menu.add_cascade(label="Recent Files", menu=recent_menu)
-
-    tree_menu = tk.Menu(menu_bar, tearoff=0)
-    tree_menu.add_command(label="Expand All", command=lambda: expandAll(), accelerator="Ctrl+E")
-    tree_menu.add_command(label="Collapse All", command=lambda: collapseAll(), accelerator="Ctrl+Shift+E")
-    menu_bar.add_cascade(label="Tree", menu=tree_menu)
-
     # ==== Search bar ==========================================================
     setup_search_bar(tk, global_vars.tree, ttk)
    
     #recent files menu update function
     def update_recent_files_menu():
-        recent_menu.delete(0, 'end')
+        global_vars.recent_menu.delete(0, 'end')
         for path in global_vars.recent_files:
-            recent_menu.add_command(label=path, command=lambda p=path: open_dropped_file(global_vars.tree, p, update_recent_files_menu))
+            global_vars.recent_menu.add_command(label=path, command=lambda p=path: open_dropped_file(global_vars.tree, p, update_recent_files_menu))
+    
+    # set up the menu
+    setup_menu(tk, open_file_dialog, update_recent_files_menu, openFileDialog, expandAll, collapseAll)
+
+    # Load recent files at startup
     load_recent_files(update_recent_files_menu)
    
     #tooltip 
@@ -110,5 +99,5 @@ def render_json_tree():
     setup_shortcuts(openFileDialog, doSearch, doClearSearch, expandAll, collapseAll)
 
     # add menu bar to the window
-    global_vars.root.config(menu=menu_bar)
+    global_vars.root.config(menu=global_vars.menu_bar)
     global_vars.root.mainloop()
