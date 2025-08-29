@@ -6,7 +6,7 @@ from utils import set_status
 import tkinter as tk
 from tkinter import simpledialog, messagebox, filedialog
 from get_clipboard_text import get_clipboard_content
-from tree_utils import insert_json, insert_xml, extract_tree
+from tree_utils import insert_json, insert_xml, extract_tree, export_treeview_to_xml
 import traceback
 
 # === Tree Editing Features ===
@@ -24,8 +24,9 @@ def save_tree_as_xml():
             title="Save Tree as XML"
         )
         if file_path:
-            tree_obj = ET.ElementTree(xml_element)
-            tree_obj.write(file_path, encoding='utf-8', xml_declaration=True)
+            export_treeview_to_xml(tree_widget, file_path)
+            #tree_obj = ET.ElementTree(xml_element)
+            #tree_obj.write(file_path, encoding='utf-8', xml_declaration=True)
             messagebox.showinfo("Success", f"Tree saved as XML to:\n{file_path}")
     except Exception as e:
         messagebox.showerror("Save Error", f"Failed to save XML:\n{e}")

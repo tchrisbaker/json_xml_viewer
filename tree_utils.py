@@ -105,3 +105,34 @@ def extract_tree(tree, node='', format='json'):
         return extract_xml(node)
     else:
         raise ValueError("Unsupported format. Use 'json' or 'xml'.")
+
+def export_treeview_to_xml(treeview_widget, filename="output.xml"):
+    root_xml = ET.Element("TreeviewData")
+
+    def add_item_to_xml(parent_xml_element, item_id):
+        item_info = treeview_widget.item(item_id)
+        item_text = item_info['text']
+        item_values = item_info['values']
+
+        # Create an XML element for the current Treeview item
+        # You might customize the tag name and attributes based on your data
+        item_element = ET.SubElement(parent_xml_element, "Item", text=item_text)
+
+        # Add values as attributes or sub-elements
+        for i, value in enumerate(item_values):
+            item_element.set(f"col{i+1}", str(value))
+
+        # Recursively add child items
+        for child_id in treeview_widget.get_children(item_id):
+            add_item_to_xml(item_element, child_id)
+
+    # Start with top-level items
+    for top_level_item_id in treeview_widget.get_children(''):
+        add_item_to_xml(root_xml, top_level_item_id)
+
+    # Create and write the XML tree to a file
+    tree = ET.ElementTree(root_xml)
+    tree.write(filename, encoding='utf-8', xml_declaration=True)
+    print(f"Treeview data exported to {filename}")
+
+
