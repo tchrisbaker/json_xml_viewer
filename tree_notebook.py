@@ -5,10 +5,6 @@ from tooltip import ToolTip
 from tooltip import setup_tooltip
 from context_menu import setup_context_menu
 from context_menu import search_selected
-
-
-
-
  
 def create_new_tab(title="Untitled"):
     tab_frame = tk.Frame(global_vars.notebook)
@@ -34,7 +30,10 @@ def create_new_tab(title="Untitled"):
     tooltip = ToolTip(tree)
     setup_tooltip(tree, tooltip)
     setup_context_menu(tree, global_vars.root, search_selected)
-   
+    #highlight
+    style = ttk.Style()
+    style.configure("Treeview.Highlighted", background="#ffd966")  # Light yellow
+    tree.tag_configure("highlight", background="#ffd966")
     return tree 
 def on_tab_change(event):
     selected_tab = global_vars.notebook.select()

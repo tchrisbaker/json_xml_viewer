@@ -29,8 +29,7 @@ def render_json_tree():
     global_vars.root.title("Tree Viewer")
     global_vars.root.geometry("800x600")
 
-
-    # Create notebook for tabs
+    #right-click menu for tab
     def show_tab_context_menu(event):
         #tab_id = global_vars.notebook.identify(event.x, event.y)
         tab_id = global_vars.notebook.index(f"@{event.x},{event.y}")
@@ -40,6 +39,7 @@ def render_json_tree():
             global_vars.current_tab = tab_id
             global_vars.tree = global_vars.trees[tab_id]
             tab_menu.post(event.x_root, event.y_root)
+    # close a tab
     def close_tab(tab_id):
         global_vars.notebook.forget(tab_id)
         if tab_id in global_vars.trees:
@@ -53,35 +53,17 @@ def render_json_tree():
         else:
             global_vars.current_tab = None
             global_vars.tree = None
+
+    # Create notebook for tabs
     global_vars.notebook = ttk.Notebook(global_vars.root)
     global_vars.notebook.pack(fill='both', expand=True)
     global_vars.notebook.bind("<<NotebookTabChanged>>", on_tab_change)
-    
+    # allow user to close the tab via right-click
     tab_menu = tk.Menu(global_vars.root, tearoff=0)
     tab_menu.add_command(label="Close Tab", command=lambda: close_tab(global_vars.current_tab))
     global_vars.notebook.bind("<Button-3>", show_tab_context_menu)
    
     create_new_tab()
-    # Tree widget with scrollbar
-    #tree_frame = tk.Frame(global_vars.root)
-    #tree_frame.pack(fill='both', expand=True)
-
-    # add scrollbar to the tree
-    #tree_scrollbar = ttk.Scrollbar(tree_frame)
-    #tree_scrollbar.pack(side='right', fill='y')
-
-    # the treeview
-    #global_vars.tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scrollbar.set)
-    #tooltip = ToolTip(global_vars.tree)
-    #global_vars.tree.pack(side='left', fill='both', expand=True)
-
-    #tree_scrollbar.config(command=global_vars.tree.yview)
-
-    #highlight
-    #style = ttk.Style()
-    #style.configure("Treeview.Highlighted", background="#ffd966")  # Light yellow
-
-    #global_vars.tree.tag_configure("highlight", background="#ffd966")
 
     # === status bar ==============================================================
     global_vars.status_var = tk.StringVar()
