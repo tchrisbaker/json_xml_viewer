@@ -51,17 +51,52 @@ def extract_tree(tree, node='', format='json'):
             key = tree.item(child)['text']
             result[key] = extract_json(child)
         return result
+    
+    # def extract_xml(node_id):
+    #     text = tree.item(node_id)['text'].strip()
+    #     tag = text.split()[0] if text else "node"  # Default to "node" if empty
+
+    #     #tag = tree.item(node_id)['text'].split()[0]
+    #     element = ET.Element(tag)
+    #     children = tree.get_children(node_id)
+    #     for child in children:
+    #         child_element = extract_xml(child)
+    #         element.append(child_element)
+    #     return element
+
+    # def extract_xml(node_id):
+    #     text = tree.item(node_id)['text'].strip()
+    #     tag = text.split()[0] if text else "node"
+    #     element = ET.Element(tag)
+
+    #     children = tree.get_children(node_id)
+    #     if not children:
+    #         element.text = text
+    #     else:
+    #         for child in children:
+    #             child_element = extract_xml(child)
+    #             element.append(child_element)
+
+    #     return element
 
     def extract_xml(node_id):
         text = tree.item(node_id)['text'].strip()
-        tag = text.split()[0] if text else "node"  # Default to "node" if empty
-
-        #tag = tree.item(node_id)['text'].split()[0]
+        tag = text.split()[0] if text else "node"
         element = ET.Element(tag)
+
         children = tree.get_children(node_id)
-        for child in children:
-            child_element = extract_xml(child)
-            element.append(child_element)
+        if children:
+            for child in children:
+                child_text = tree.item(child)['text'].strip()
+                if not tree.get_children(child):
+                    # Leaf node with text content
+                    element.text = child_text
+                else:
+                    child_element = extract_xml(child)
+                    element.append(child_element)
+        else:
+            element.text = text
+
         return element
 
     if format == 'json':
