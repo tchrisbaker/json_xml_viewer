@@ -65,6 +65,7 @@ def render_json_tree():
     global_vars.notebook = ttk.Notebook(global_vars.root)
     global_vars.notebook.pack(fill='both', expand=True)
     global_vars.notebook.bind("<<NotebookTabChanged>>", on_tab_change)
+    
     # allow user to close the tab via right-click
     tab_menu = tk.Menu(global_vars.root, tearoff=0)
     tab_menu.add_command(label="Close Tab", command=lambda: close_tab(global_vars.current_tab))
