@@ -31,10 +31,36 @@ def render_json_tree():
 
 
     # Create notebook for tabs
+    def show_tab_context_menu(event):
+        #tab_id = global_vars.notebook.identify(event.x, event.y)
+        tab_id = global_vars.notebook.index(f"@{event.x},{event.y}")
+        tab_id = global_vars.notebook.tabs()[tab_id]
+        if tab_id:
+            global_vars.notebook.select(tab_id)
+            global_vars.current_tab = tab_id
+            global_vars.tree = global_vars.trees[tab_id]
+            tab_menu.post(event.x_root, event.y_root)
+    def close_tab(tab_id):
+        global_vars.notebook.forget(tab_id)
+        if tab_id in global_vars.trees:
+            del global_vars.trees[tab_id]
+
+        tabs = global_vars.notebook.tabs()
+        if tabs:
+            new_tab = tabs[-1]
+            global_vars.current_tab = new_tab
+            global_vars.tree = global_vars.trees[new_tab]
+        else:
+            global_vars.current_tab = None
+            global_vars.tree = None
     global_vars.notebook = ttk.Notebook(global_vars.root)
     global_vars.notebook.pack(fill='both', expand=True)
     global_vars.notebook.bind("<<NotebookTabChanged>>", on_tab_change)
     
+    tab_menu = tk.Menu(global_vars.root, tearoff=0)
+    tab_menu.add_command(label="Close Tab", command=lambda: close_tab(global_vars.current_tab))
+    global_vars.notebook.bind("<Button-3>", show_tab_context_menu)
+   
     create_new_tab()
     # Tree widget with scrollbar
     #tree_frame = tk.Frame(global_vars.root)

@@ -26,6 +26,8 @@ def setup_menu(tk, open_file_dialog, update_recent_files_menu, openFileDialog=No
     tree_menu.add_command(label="Expand All", command=lambda: expandAll(), accelerator="Ctrl+E")
     tree_menu.add_command(label="Collapse All", command=lambda: collapseAll(), accelerator="Ctrl+Shift+E")
     tree_menu.add_command(label="Paste JSON/XML", command=lambda: paste_text_auto())
+    tree_menu.add_command(label="Close Tab", command=close_current_tab)
+
     global_vars.menu_bar.add_cascade(label="Tree", menu=tree_menu)
 
 def paste_text_auto():
@@ -43,3 +45,18 @@ def paste_text_auto():
             set_status("Pasted XML from clipboard.")
         except ET.ParseError:
             messagebox.showerror("Paste Error", "Clipboard does not contain valid JSON or XML.")
+def close_current_tab():
+    tab_id = global_vars.current_tab
+    if tab_id:
+        global_vars.notebook.forget(tab_id)
+        del global_vars.trees[tab_id]
+
+        # Update current tab reference
+        tabs = global_vars.notebook.tabs()
+        if tabs:
+            new_tab = tabs[-1]
+            global_vars.current_tab = new_tab
+            global_vars.tree = global_vars.trees[new_tab]
+        else:
+            global_vars.current_tab = None
+            global_vars.tree = None
