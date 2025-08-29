@@ -8,3 +8,7 @@ search_entry = None # The search entry widget
 tree = None # The treeview widget
 recent_menu = None # The recent files menu object
 menu_bar = None # The main menu bar
+notebook = None  # The ttk.Notebook widget
+trees = {}       # Dictionary to store Treeviews per tab
+current_tab = None  # Currently active tab ID
+update_recent_files_menu = None

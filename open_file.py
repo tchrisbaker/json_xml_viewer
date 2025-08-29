@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import xml.etree.ElementTree as ET
 from recent_files import add_to_recent_files
+from tree_notebook import create_new_tab
 def insert_xml(tree, parent, element):
     tag = element.tag
     node_text = f"{tag}"
@@ -35,18 +36,19 @@ def open_file_dialog(tree, root, callback=None):
     )
     if file_path:
         try:
-            tree.delete(*tree.get_children())  # Clear previous tree
+            new_tree = create_new_tab()
+            #tree.delete(*tree.get_children())  # Clear previous tree
             file_name = file_path.split("/")[-1]  # or use os.path.basename(file_path)
 
             if file_path.endswith('.json'):
                 with open(file_path, 'r') as f:
                     json_data = json.load(f)
-                insert_json(tree, '', json_data)
+                insert_json(new_tree, '', json_data)
             elif file_path.endswith('.xml'):
                 import xml.etree.ElementTree as ET
                 tree_data = ET.parse(file_path)
                 root_element = tree_data.getroot()
-                insert_xml(tree, '', root_element)
+                insert_xml(new_tree, '', root_element)
             else:
                 messagebox.showerror("Unsupported Format", "Only .json and .xml files are supported.")
                 return

@@ -3,25 +3,26 @@ import xml.etree.ElementTree as ET
 from tkinter import messagebox
 from tkinterdnd2 import DND_FILES
 from recent_files import add_to_recent_files
+from tree_notebook import create_new_tab
 import global_vars
 def open_dropped_file(tree, file_path, callback):
-   
+    new_tree = create_new_tab()
     # Clear existing tree content
-    for item in tree.get_children():
-        tree.delete(item)
+    #for item in tree.get_children():
+    #    tree.delete(item)
 
     try:
         if file_path.lower().endswith('.json'):
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             from tree_utils import insert_json
-            insert_json(tree, '', data)
+            insert_json(new_tree, '', data)
             add_to_recent_files(file_path, callback)
         elif file_path.lower().endswith('.xml'):
             tree_obj = ET.parse(file_path)
             root_element = tree_obj.getroot()
             from tree_utils import insert_xml
-            insert_xml(tree, '', root_element)
+            insert_xml(new_tree, '', root_element)
             add_to_recent_files(file_path, callback)
         else:
             messagebox.showerror("Unsupported File", "Only JSON and XML files are supported.")

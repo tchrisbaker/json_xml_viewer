@@ -7,8 +7,6 @@ search_matches = []
 current_match_index = -1
 search_after_id = None  # Global or closure variable to track scheduled search
 
-
-
 def clear_highlights(tree):
     for item in tree.get_children():
         clear_node_highlight(tree, item)
@@ -19,7 +17,7 @@ def clear_node_highlight(tree, node):
         clear_node_highlight(tree, child)
         
 def search_tree(tree, query):
-    clear_highlights(tree)  # Unhighlight previous matches
+    clear_highlights(global_vars.tree)  # Unhighlight previous matches
     match_count = 0
     
     case_sensitive = global_vars.case_var.get()
@@ -68,7 +66,7 @@ def search_tree(tree, query):
 
 
 def clear_search(tree, search_entry):
-    clear_highlights(tree)
+    clear_highlights(global_vars.tree)
     for item in tree.selection():
         tree.selection_remove(item)
     search_entry.delete(0, tk.END)

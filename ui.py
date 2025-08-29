@@ -21,32 +21,41 @@ from searchbar import setup_search_bar
 from searchbar import doSearch
 from searchbar import doClearSearch
 from menu import setup_menu
+from tree_notebook import on_tab_change
+from tree_notebook import create_new_tab
 def render_json_tree():
     # Initialize main application window
     global_vars.root = TkinterDnD.Tk()
     global_vars.root.title("Tree Viewer")
     global_vars.root.geometry("800x600")
 
+
+    # Create notebook for tabs
+    global_vars.notebook = ttk.Notebook(global_vars.root)
+    global_vars.notebook.pack(fill='both', expand=True)
+    global_vars.notebook.bind("<<NotebookTabChanged>>", on_tab_change)
+    
+    create_new_tab()
     # Tree widget with scrollbar
-    tree_frame = tk.Frame(global_vars.root)
-    tree_frame.pack(fill='both', expand=True)
+    #tree_frame = tk.Frame(global_vars.root)
+    #tree_frame.pack(fill='both', expand=True)
 
     # add scrollbar to the tree
-    tree_scrollbar = ttk.Scrollbar(tree_frame)
-    tree_scrollbar.pack(side='right', fill='y')
+    #tree_scrollbar = ttk.Scrollbar(tree_frame)
+    #tree_scrollbar.pack(side='right', fill='y')
 
     # the treeview
-    global_vars.tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scrollbar.set)
-    tooltip = ToolTip(global_vars.tree)
-    global_vars.tree.pack(side='left', fill='both', expand=True)
+    #global_vars.tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scrollbar.set)
+    #tooltip = ToolTip(global_vars.tree)
+    #global_vars.tree.pack(side='left', fill='both', expand=True)
 
-    tree_scrollbar.config(command=global_vars.tree.yview)
+    #tree_scrollbar.config(command=global_vars.tree.yview)
 
     #highlight
-    style = ttk.Style()
-    style.configure("Treeview.Highlighted", background="#ffd966")  # Light yellow
+    #style = ttk.Style()
+    #style.configure("Treeview.Highlighted", background="#ffd966")  # Light yellow
 
-    global_vars.tree.tag_configure("highlight", background="#ffd966")
+    #global_vars.tree.tag_configure("highlight", background="#ffd966")
 
     # === status bar ==============================================================
     global_vars.status_var = tk.StringVar()
@@ -72,7 +81,7 @@ def render_json_tree():
         global_vars.recent_menu.delete(0, 'end')
         for path in global_vars.recent_files:
             global_vars.recent_menu.add_command(label=path, command=lambda p=path: open_dropped_file(global_vars.tree, p, update_recent_files_menu))
-    
+    global_vars.update_recent_files_menu = update_recent_files_menu
     # set up the menu
     setup_menu(tk, open_file_dialog, update_recent_files_menu, openFileDialog, expandAll, collapseAll)
 
@@ -80,7 +89,7 @@ def render_json_tree():
     load_recent_files(update_recent_files_menu)
    
     #tooltip 
-    setup_tooltip(global_vars.tree, tooltip)
+    #setup_tooltip(global_vars.tree, tooltip)
     
     #Set up Drag and Drop
     setupDnD(global_vars.tree, update_recent_files_menu )
