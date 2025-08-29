@@ -53,7 +53,10 @@ def extract_tree(tree, node='', format='json'):
         return result
 
     def extract_xml(node_id):
-        tag = tree.item(node_id)['text'].split()[0]
+        text = tree.item(node_id)['text'].strip()
+        tag = text.split()[0] if text else "node"  # Default to "node" if empty
+
+        #tag = tree.item(node_id)['text'].split()[0]
         element = ET.Element(tag)
         children = tree.get_children(node_id)
         for child in children:
