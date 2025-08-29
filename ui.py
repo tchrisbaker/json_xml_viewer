@@ -30,6 +30,15 @@ def render_json_tree():
     global_vars.root.title("Tree Viewer")
     global_vars.root.geometry("800x600")
 
+    def close_tab_on_middle_click(event):
+        try:
+            tab_index = global_vars.notebook.index(f"@{event.x},{event.y}")
+            tab_id = global_vars.notebook.tabs()[tab_index]
+            close_tab(tab_id)
+        except Exception as e:
+            print("Middle-click tab close error:", e)
+
+
     #right-click menu for tab
     def show_tab_context_menu(event):
         #tab_id = global_vars.notebook.identify(event.x, event.y)
@@ -70,7 +79,7 @@ def render_json_tree():
     tab_menu = tk.Menu(global_vars.root, tearoff=0)
     tab_menu.add_command(label="Close Tab", command=lambda: close_tab(global_vars.current_tab))
     global_vars.notebook.bind("<Button-3>", show_tab_context_menu)
-   
+    global_vars.notebook.bind("<Button-2>", close_tab_on_middle_click)
     create_new_tab("Drag and Drop")
 
     # === status bar ==============================================================
