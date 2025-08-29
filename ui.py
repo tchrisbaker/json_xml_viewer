@@ -23,6 +23,7 @@ from searchbar import doClearSearch
 from menu import setup_menu
 from tree_notebook import on_tab_change
 from tree_notebook import create_new_tab
+from tkinter import messagebox
 def render_json_tree():
     # Initialize main application window
     global_vars.root = TkinterDnD.Tk()
@@ -41,11 +42,17 @@ def render_json_tree():
             tab_menu.post(event.x_root, event.y_root)
     # close a tab
     def close_tab(tab_id):
+        tabs = global_vars.notebook.tabs()
+        if len(tabs) <= 1:
+            messagebox.showinfo("Cannot Close Tab", "At least one tab must remain open.")
+            return
+
         global_vars.notebook.forget(tab_id)
         if tab_id in global_vars.trees:
             del global_vars.trees[tab_id]
 
-        tabs = global_vars.notebook.tabs()
+       
+        
         if tabs:
             new_tab = tabs[-1]
             global_vars.current_tab = new_tab
@@ -63,7 +70,7 @@ def render_json_tree():
     tab_menu.add_command(label="Close Tab", command=lambda: close_tab(global_vars.current_tab))
     global_vars.notebook.bind("<Button-3>", show_tab_context_menu)
    
-    create_new_tab()
+    create_new_tab("Drag and Drop")
 
     # === status bar ==============================================================
     global_vars.status_var = tk.StringVar()

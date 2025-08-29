@@ -6,7 +6,8 @@ from recent_files import add_to_recent_files
 from tree_notebook import create_new_tab
 import global_vars
 def open_dropped_file(tree, file_path, callback):
-    new_tree = create_new_tab()
+    file_name = file_path.split("/")[-1]  # or use os.path.basename(file_path)
+    new_tree = create_new_tab(file_name)
     # Clear existing tree content
     #for item in tree.get_children():
     #    tree.delete(item)
@@ -26,7 +27,7 @@ def open_dropped_file(tree, file_path, callback):
             add_to_recent_files(file_path, callback)
         else:
             messagebox.showerror("Unsupported File", "Only JSON and XML files are supported.")
-        file_name = file_path.split("/")[-1]  # or use os.path.basename(file_path)
+        #file_name = file_path.split("/")[-1]  # or use os.path.basename(file_path)
         global_vars.root.title(f"JSON/XML Tree Viewer - {file_name}")  # Update title bar
     except Exception as e:
         messagebox.showerror("Error", f"Failed to open file:\n{e}")

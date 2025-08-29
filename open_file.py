@@ -36,10 +36,10 @@ def open_file_dialog(tree, root, callback=None):
     )
     if file_path:
         try:
-            new_tree = create_new_tab()
+            
             #tree.delete(*tree.get_children())  # Clear previous tree
             file_name = file_path.split("/")[-1]  # or use os.path.basename(file_path)
-
+            new_tree = create_new_tab(file_name)
             if file_path.endswith('.json'):
                 with open(file_path, 'r') as f:
                     json_data = json.load(f)
